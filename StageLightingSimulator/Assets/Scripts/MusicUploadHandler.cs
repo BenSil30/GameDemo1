@@ -6,22 +6,50 @@ using SFB;  // Standalone File Browser namespace
 
 public class MusicUploadHandler : MonoBehaviour
 {
-	public Button uploadButton;         // Reference to the Upload Music button
+	public Button uploadButton;
+	public Button PlayPauseButton;
+	public Button RestartButton;
 
-	//public Button stopButton;           // Button to stop music
-	public Text musicInfoText;          // Reference to the Music Info Text UI element
+	public Text musicInfoText;
 
-	public AudioSource audioSource;     // Reference to the AudioSource
-
+	public AudioSource audioSource;
 	public AudioClip audioClip;
 
-	private Coroutine musicLoadingCoroutine; // Coroutine reference to manage the loading
+	public bool IsPlaying = false;
+
+	private Coroutine musicLoadingCoroutine;
 
 	private void Start()
 	{
 		// Attach the UploadMusic method to the button click
 		uploadButton.onClick.AddListener(UploadMusic);
+		PlayPauseButton.onClick.AddListener(ToggleMusicPlayback);
+		RestartButton.onClick.AddListener(RestartSong);
 		//stopButton.onClick.AddListener(StopMusic);
+	}
+
+	private void ToggleMusicPlayback()
+	{
+		if (audioClip == null) return;
+
+		IsPlaying = !IsPlaying;
+		if (IsPlaying)
+		{
+			PlayPauseButton.GetComponentInChildren<Text>().text = "Pause";
+			audioSource.Play();
+		}
+		else
+		{
+			PlayPauseButton.GetComponentInChildren<Text>().text = "Play";
+			audioSource.Pause();
+		}
+	}
+
+	private void RestartSong()
+	{
+		IsPlaying = true;
+		audioSource.Stop();
+		audioSource.Play();
 	}
 
 	private void UploadMusic()
@@ -60,7 +88,7 @@ public class MusicUploadHandler : MonoBehaviour
 				{
 					audioSource.clip = clip;
 					audioClip = clip;
-					audioSource.Play();
+					//audioSource.Play();
 					musicInfoText.text = "Selected: " + Path.GetFileName(path);
 				}
 				else
