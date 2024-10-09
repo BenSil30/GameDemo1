@@ -80,8 +80,10 @@ public class UIManager : MonoBehaviour
 		}
 	}
 
-	private void TogglePause()
+	public void TogglePause()
 	{
+		Debug.Log("Pause Toggled");
+		CameraController.ToggleFreezeCamera();
 		IsPaused = !IsPaused;
 		if (IsPaused)
 		{

@@ -1,3 +1,4 @@
+using Ookii.Dialogs;
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
@@ -25,6 +26,8 @@ public class LightsAnimationController : MonoBehaviour
 	// Variables for strobe effect
 	private float strobeTimer = 0;
 
+	public float StrobeSpeed = 0;
+
 	private bool strobeOn = false;
 
 	public bool isAnimating = false;
@@ -35,14 +38,16 @@ public class LightsAnimationController : MonoBehaviour
 
 	private void Start()
 	{
-		GrabLightComponents();
-
-		UpdateSliderValues();
-
-		AddListeners();
+		controlledLight = GetComponentInChildren<Light>();
 	}
 
-	private void AddListeners()
+	public void Update()
+	{
+		// Handle strobe effect
+		HandleStrobe();
+	}
+
+	public void AddListeners()
 	{
 		intensitySlider.onValueChanged.AddListener(UpdateLightIntensity);
 
@@ -59,14 +64,36 @@ public class LightsAnimationController : MonoBehaviour
 		rotationZSlider.onValueChanged.AddListener(UpdateLightRotation);
 
 		rotSpeedSlider.onValueChanged.AddListener(UpdateLightRotationSpeed);
+		strobeSpeedSlider.onValueChanged.AddListener(UpdateStrobeSpeed);
 
 		StartStopButton.onClick.AddListener(ToggleAnimation);
 	}
 
-	private void GrabLightComponents()
+	public void RemoveListeners()
 	{
-		controlledLight = GetComponentInChildren<Light>();
+		intensitySlider.onValueChanged.RemoveAllListeners();
 
+		redSlider.onValueChanged.RemoveAllListeners();
+		greenSlider.onValueChanged.RemoveAllListeners();
+		blueSlider.onValueChanged.RemoveAllListeners();
+
+		positionXSlider.onValueChanged.RemoveAllListeners();
+		positionYSlider.onValueChanged.RemoveAllListeners();
+		positionZSlider.onValueChanged.RemoveAllListeners();
+
+		rotationXSlider.onValueChanged.RemoveAllListeners();
+		rotationYSlider.onValueChanged.RemoveAllListeners();
+		rotationZSlider.onValueChanged.RemoveAllListeners();
+
+		rotSpeedSlider.onValueChanged.RemoveAllListeners();
+
+		strobeSpeedSlider.onValueChanged.RemoveAllListeners();
+
+		StartStopButton.onClick.RemoveAllListeners();
+	}
+
+	public void GrabLightPanelComponents()
+	{
 		// Set default values for sliders to match initial light properties
 		rotSpeedSlider = GameObject.Find("RotSpeedSlider").GetComponent<Slider>();
 
@@ -89,7 +116,7 @@ public class LightsAnimationController : MonoBehaviour
 		StartStopButton = GameObject.Find("Start/StopButton").GetComponent<Button>();
 	}
 
-	private void UpdateSliderValues()
+	public void UpdateSliderValues()
 	{
 		intensitySlider.value = controlledLight.intensity;
 
@@ -107,55 +134,51 @@ public class LightsAnimationController : MonoBehaviour
 
 		rotSpeedSlider.value = RotationSpeed;
 
-		strobeSpeedSlider.value = 0; // Start with no strobe effect
-									 //todo update strobe values after every method call
+		strobeSpeedSlider.value = StrobeSpeed; ; // Start with no strobe effect
+												 //todo update strobe values after every method call
 	}
 
-	private void Update()
-	{
-		// Handle strobe effect
-		HandleStrobe();
-	}
-
-	private void UpdateLightIntensity(float value)
+	public void UpdateLightIntensity(float value)
 	{
 		controlledLight.intensity = value;
 	}
 
-	private void UpdateLightRotationSpeed(float value)
+	public void UpdateLightRotationSpeed(float value)
 	{
 		RotationSpeed = value;
 	}
 
-	private void UpdateLightRotation(float value)
+	public void UpdateLightRotation(float value)
 	{
 		Vector3 newRotation = new Vector3(rotationXSlider.value, rotationYSlider.value, rotationZSlider.value);
 		controlledLight.transform.rotation = Quaternion.Euler(newRotation);
 		//transform.rotation = Quaternion.Euler(newRotation);
 	}
 
-	private void UpdateLightPosition(float value)
+	public void UpdateLightPosition(float value)
 	{
 		Vector3 newPosition = new Vector3(positionXSlider.value, positionYSlider.value, positionZSlider.value);
 		controlledLight.transform.position = newPosition;
 		transform.position = newPosition;
 	}
 
-	private void UpdateLightColor(float value)
+	public void UpdateLightColor(float value)
 	{
 		Color lightColor = new Color(redSlider.value, greenSlider.value, blueSlider.value);
 		controlledLight.color = lightColor;
 	}
 
-	private void HandleStrobe()
+	public void UpdateStrobeSpeed(float value)
 	{
-		// Get the strobe speed from the slider (0 means no strobe)
-		float strobeSpeed = strobeSpeedSlider.value;
+		StrobeSpeed = value;
+	}
 
-		if (strobeSpeed > 0)
+	public void HandleStrobe()
+	{
+		if (StrobeSpeed > 0)
 		{
 			strobeTimer += Time.deltaTime;
-			if (strobeTimer >= 1f / strobeSpeed)
+			if (strobeTimer >= 1f / StrobeSpeed)
 			{
 				strobeOn = !strobeOn;
 				controlledLight.enabled = strobeOn;
@@ -169,7 +192,7 @@ public class LightsAnimationController : MonoBehaviour
 		}
 	}
 
-	private void ToggleAnimation()
+	public void ToggleAnimation()
 	{
 		isAnimating = !isAnimating;
 		if (isAnimating)
@@ -184,7 +207,7 @@ public class LightsAnimationController : MonoBehaviour
 		}
 	}
 
-	private IEnumerator RotateLightContinually()
+	public IEnumerator RotateLightContinually()
 	{
 		while (isAnimating)
 		{
